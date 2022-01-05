@@ -1,4 +1,5 @@
-use rand::prelude::*;
+use crate::airdrop_dictionary::AirdropDictionary;
+use crate::signing::MessageSigner;
 use anyhow::Result;
 use axum::{
     http::StatusCode,
@@ -6,13 +7,11 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use rand::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use tracing;
 use tracing_subscriber;
-use crate::airdrop_dictionary::AirdropDictionary;
-use crate::signing::MessageSigner;
-
 
 lazy_static! {
     static ref DICTIONARY: AirdropDictionary = AirdropDictionary::load();
@@ -25,7 +24,6 @@ pub async fn app() {
     let app = Router::new()
         .route("/", get(root))
         .route("/sign", post(sign));
-
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     tracing::info!("listening on {}", addr);
@@ -41,20 +39,21 @@ async fn root() -> &'static str {
 
 #[derive(Deserialize, Debug)]
 struct Payload {
-    address: String
+    address: String,
 }
 
 #[derive(Serialize)]
 struct Data {
     signature: String,
-    item_ids: Vec<i32>
+    item_ids: Vec<i32>,
+    uris: Vec<String>,
 }
 
 #[derive(Serialize)]
 struct Response {
     success: bool,
     message: String,
-    data: Option<Data>
+    data: Option<Data>,
 }
 
 #[tracing::instrument]
@@ -64,22 +63,27 @@ async fn sign(Json(payload): Json<Payload>) -> impl IntoResponse {
     match size {
         Some(value) => {
             tracing::info!("signing");
-            let (signature, item_ids) = sign_message(payload.address, value).await.unwrap();
+
+            let (signature, item_ids, uris) = sign_message(payload.address, value).await.unwrap();
 
             let message = Response {
                 success: true,
                 message: "ok".to_string(),
-                data: Some(Data { signature, item_ids })
+                data: Some(Data {
+                    signature,
+                    item_ids,
+                    uris,
+                }),
             };
 
             return (StatusCode::OK, Json(message));
-        },
+        }
         None => {
             tracing::info!("error");
             let error = Response {
                 success: false,
                 message: "address is not in the wait list".to_string(),
-                data: None
+                data: None,
             };
 
             return (StatusCode::BAD_REQUEST, Json(error));
@@ -87,14 +91,18 @@ async fn sign(Json(payload): Json<Payload>) -> impl IntoResponse {
     }
 }
 
-async fn sign_message(address: String, size: i32) -> Result<(String, Vec<i32>)> {
+async fn sign_message(address: String, size: i32) -> Result<(String, Vec<i32>, Vec<String>)> {
     let item_ids = rand_item(size).unwrap();
+    let uris: Vec<String> = item_ids
+        .iter()
+        .map(|&x| format!("https://static.howlcity.io/bike/{}.json", x))
+        .collect();
 
-    let message = MessageSigner::encode_message(&address, item_ids.clone());
+    let message = MessageSigner::encode_message(&address, item_ids.clone(), uris.clone());
     let signature = SIGNER.create_signature(&message).await.unwrap();
     // SIGNER.verify_signature(message, signature).unwrap();
 
-    Ok((signature.to_string(), item_ids))
+    Ok((signature.to_string(), item_ids, uris))
 }
 
 fn rand_item(size: i32) -> Result<Vec<i32>> {
@@ -105,6 +113,6 @@ fn rand_item(size: i32) -> Result<Vec<i32>> {
         let roll = rng.gen_range(101..=125);
         result.push(roll);
     }
-    
+
     Ok(result)
 }
