@@ -33,6 +33,8 @@ impl AirdropDictionary {
             }
         }
 
+        dictionary.hash_map.insert("0xBd57D3A669147F88166A88765e0BFb493ae00c5B".to_string().to_lowercase(), 2);
+
         dictionary.save();
 
         Ok(())
@@ -53,11 +55,8 @@ impl AirdropDictionary {
 
     pub fn get(&self, address: &str) -> Option<i32> {
         match self.hash_map.get(&address.to_lowercase()) {
-            Some(value) => {
-                println!("do something here {}", value);
-                return Some(*value);
-            }
-            None => None,
+            Some(value) => Some(*value),
+            None => None
         }
     }
 }

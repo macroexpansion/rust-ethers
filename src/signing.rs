@@ -1,5 +1,5 @@
 use anyhow::Result;
-use dotenv::{dotenv, from_filename, var};
+use dotenv;
 use ethers::{
     abi::{encode, token::Token},
     signers::{LocalWallet, Signer},
@@ -19,9 +19,9 @@ impl MessageSigner {
     }
 
     pub fn from_env(key: &str) -> Self {
-        dotenv().ok();
-        from_filename(".secret").ok();
-        let private_key = var(key).unwrap();
+        dotenv::dotenv().ok();
+        dotenv::from_filename(".secret").ok();
+        let private_key = dotenv::var(key).unwrap();
 
         MessageSigner {
             wallet: LocalWallet::from_str(&private_key).unwrap(),
@@ -44,10 +44,9 @@ impl MessageSigner {
         encoded_message
     }
 
-    #[tokio::main]
     pub async fn create_signature(&self, message: &Vec<u8>) -> Result<Signature> {
         let signature: Signature = self.wallet.sign_message(&message).await?;
-        println!("Produced signature {}", signature);
+        // println!("Produced signature {}", signature.to_string());
 
         Ok(signature)
     }

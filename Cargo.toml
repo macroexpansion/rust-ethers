@@ -1,5 +1,5 @@
 [package]
-name = "ethers-rust"
+name = "airdrop_cmc"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,9 +10,18 @@ ethers = { git = "https://github.com/gakonst/ethers-rs" }
 calamine = "0.18.0"
 bincode = "1.3.3"
 serde = {version = "1.0.132", features = ["derive"]}
+serde_json = "1.0.68"
 tokio = { version = "1.5", features = ["macros", "rt-multi-thread"] }
 anyhow = "1.0.39"
 hex = "0.4.3"
 bytes = "1.1.0"
 rand = "0.8.4"
 dotenv = "0.15.0"
+axum = "0.4.3"
+tracing = "0.1"
+tracing-subscriber = { version="0.3", features = ["env-filter"] }
+lazy_static = "1.4.0"
+
+[[bin]]
+name = "dict"
+path = "src/scripts/dict.rs"
