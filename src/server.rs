@@ -8,7 +8,7 @@ use tracing;
 
 lazy_static! {
     static ref DICTIONARY: AirdropDictionary = AirdropDictionary::load();
-    static ref SIGNER: MessageSigner = MessageSigner::from_env("PRIVATE_KEY_LOCAL");
+    static ref SIGNER: MessageSigner = MessageSigner::from_env("PRIVATE_KEY_TESTNET");
 }
 
 #[derive(Deserialize, Debug)]
@@ -60,7 +60,7 @@ pub async fn sign(Json(payload): Json<Payload>) -> impl IntoResponse {
                 data: None,
             };
 
-            return (StatusCode::BAD_REQUEST, Json(error));
+            return (StatusCode::OK, Json(error));
         }
     }
 }
