@@ -40,6 +40,13 @@ impl AirdropDictionary {
             2,
         );
 
+        dictionary.hash_map.insert(
+            "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
+                .to_string()
+                .to_lowercase(),
+            2,
+        );
+
         dictionary.save();
 
         Ok(())

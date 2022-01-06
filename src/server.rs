@@ -15,7 +15,7 @@ use tracing_subscriber;
 
 lazy_static! {
     static ref DICTIONARY: AirdropDictionary = AirdropDictionary::load();
-    static ref SIGNER: MessageSigner = MessageSigner::from_env("PRIVATE_KEY_TESTNET");
+    static ref SIGNER: MessageSigner = MessageSigner::from_env("PRIVATE_KEY_LOCAL");
 }
 
 pub async fn app() {
@@ -100,7 +100,7 @@ async fn sign_message(address: String, size: i32) -> Result<(String, Vec<i32>, V
 
     let message = MessageSigner::encode_message(&address, item_ids.clone(), uris.clone());
     let signature = SIGNER.create_signature(&message).await.unwrap();
-    // SIGNER.verify_signature(message, signature).unwrap();
+    SIGNER.verify_signature(message, signature).unwrap();
 
     Ok((signature.to_string(), item_ids, uris))
 }
