@@ -53,7 +53,11 @@ impl MessageSigner {
         encoded_message
     }
 
-    pub async fn create_signature(&self, message: &Vec<u8>, verify: Option<bool>) -> Result<Signature> {
+    pub async fn create_signature(
+        &self,
+        message: &Vec<u8>,
+        verify: Option<bool>,
+    ) -> Result<Signature> {
         let digest = keccak256(message);
         let signature: Signature = self.wallet.sign_message(&digest).await?;
 
@@ -66,7 +70,9 @@ impl MessageSigner {
     }
 
     pub fn verify_signature(&self, digest: [u8; 32], signature: Signature) -> Result<()> {
-        signature.verify(digest.to_vec(), self.wallet.address()).unwrap();
+        signature
+            .verify(digest.to_vec(), self.wallet.address())
+            .unwrap();
         println!("Verified signature produced by {:?}", self.wallet.address());
 
         Ok(())

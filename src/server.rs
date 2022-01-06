@@ -1,44 +1,18 @@
 use crate::airdrop_dictionary::AirdropDictionary;
 use crate::signing::MessageSigner;
 use anyhow::Result;
-use axum::{
-    http::StatusCode,
-    response::IntoResponse,
-    routing::{get, post},
-    Json, Router,
-};
+use axum::{http::StatusCode, response::IntoResponse, Json};
 use rand::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::net::SocketAddr;
 use tracing;
-use tracing_subscriber;
 
 lazy_static! {
     static ref DICTIONARY: AirdropDictionary = AirdropDictionary::load();
     static ref SIGNER: MessageSigner = MessageSigner::from_env("PRIVATE_KEY_LOCAL");
 }
 
-pub async fn app() {
-    tracing_subscriber::fmt::init();
-
-    let app = Router::new()
-        .route("/", get(root))
-        .route("/sign", post(sign));
-
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    tracing::info!("listening on {}", addr);
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
-}
-
-async fn root() -> &'static str {
-    "Hello, World!"
-}
-
 #[derive(Deserialize, Debug)]
-struct Payload {
+pub struct Payload {
     address: String,
 }
 
@@ -57,7 +31,7 @@ struct Response {
 }
 
 #[tracing::instrument]
-async fn sign(Json(payload): Json<Payload>) -> impl IntoResponse {
+pub async fn sign(Json(payload): Json<Payload>) -> impl IntoResponse {
     let size = DICTIONARY.get(&payload.address);
 
     match size {
