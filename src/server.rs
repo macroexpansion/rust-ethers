@@ -99,10 +99,10 @@ async fn sign_message(address: String, size: i32) -> Result<(String, Vec<i32>, V
         .collect();
 
     let message = MessageSigner::encode_message(&address, item_ids.clone(), uris.clone());
-    let signature = SIGNER.create_signature(&message).await.unwrap();
-    SIGNER.verify_signature(message, signature).unwrap();
+    let signature = SIGNER.create_signature(&message, None).await.unwrap();
 
-    Ok((signature.to_string(), item_ids, uris))
+    let signature = format!("{}{}", "0x".to_string(), signature);
+    Ok((signature, item_ids, uris))
 }
 
 fn rand_item(size: i32) -> Result<Vec<i32>> {
