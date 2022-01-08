@@ -4,11 +4,13 @@ use anyhow::Result;
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use rand::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::env;
 use tracing;
 
 lazy_static! {
     static ref DICTIONARY: AirdropDictionary = AirdropDictionary::load();
-    static ref SIGNER: MessageSigner = MessageSigner::from_env("PRIVATE_KEY_TESTNET");
+    static ref SIGNER: MessageSigner =
+        MessageSigner::from_env(&env::var("SIGNER_PRIVATE_KEY").unwrap());
 }
 
 #[derive(Deserialize, Debug)]

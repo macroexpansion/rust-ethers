@@ -1,18 +1,41 @@
-// use axum::http::Method;
 use airdrop_cmc::server::sign;
 use axum::{
+    http::Method,
     routing::{get, post},
     Router,
-    http::Method
 };
+use clap::{ArgEnum, Parser};
+use std::env;
 use std::net::SocketAddr;
+use tower::ServiceBuilder;
+use tower_http::cors::{any, CorsLayer};
 use tracing;
 use tracing_subscriber;
-use tower::{ServiceBuilder};
-use tower_http::cors::{CorsLayer, any};
+
+#[derive(Parser, Debug)]
+#[clap(about, version, author)]
+struct Args {
+    #[clap(arg_enum, short, long)]
+    network: Network,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum, Debug)]
+enum Network {
+    MAINNET,
+    TESTNET,
+    LOCAL,
+}
 
 #[tokio::main]
 async fn main() {
+    let args = Args::parse();
+    let privatekey = match args.network {
+        Network::MAINNET => "PRIVATE_KEY_MAINNET",
+        Network::TESTNET => "PRIVATE_KEY_TESTNET",
+        Network::LOCAL => "PRIVATE_KEY_LOCAL",
+    };
+    env::set_var("SIGNER_PRIVATE_KEY", privatekey);
+
     app().await;
 }
 
@@ -24,8 +47,7 @@ async fn app() {
         .allow_headers(any())
         .allow_origin(any());
 
-    let middleware_stack = ServiceBuilder::new()
-        .layer(cors);
+    let middleware_stack = ServiceBuilder::new().layer(cors);
 
     let app = Router::new()
         .route("/", get(root))
