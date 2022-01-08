@@ -10,7 +10,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/trasua/rust-ethers"
 homepage = "https://github.com/trasua/rust-ethers"
 description = "Airdrop NFT server"
-documentation = ""
+documentation = "https://github.com/trasua/rust-ethers"
 
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
