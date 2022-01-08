@@ -17,6 +17,9 @@ use tracing_subscriber;
 struct Args {
     #[clap(arg_enum, short, long)]
     network: Network,
+
+    #[clap(short, long, default_value_t = 3000)]
+    port: u16,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum, Debug)]
@@ -36,10 +39,10 @@ async fn main() {
     };
     env::set_var("SIGNER_PRIVATE_KEY", privatekey);
 
-    app().await;
+    app(args.port).await;
 }
 
-async fn app() {
+async fn app(port: u16) {
     tracing_subscriber::fmt::init();
 
     let cors = CorsLayer::new()
@@ -54,7 +57,7 @@ async fn app() {
         .route("/sign", post(sign))
         .layer(middleware_stack);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([127, 0, 0, 1], port));
     tracing::info!("listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
